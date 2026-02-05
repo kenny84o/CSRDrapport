@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSRD Autopilot</title>
+
+  <style>
+    :root{
+      --bg: #000000;
+      --card: #070b12;
+      --border: #142033;
+      --heading: #0b2a5b;   /* mørk blå overskrifter */
+      --text: #ffffff;      /* hvit ingress/artikkel */
+      --muted: #c9d2e1;
+      --primary: #2aa8ff;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1100px 700px at 20% 0%, #071a33 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+    .container{ width:min(1100px, 92vw); margin:0 auto; }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:18px 0;
+    }
+    .brand{ display:flex; gap:12px; align-items:center; }
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: linear-gradient(135deg, #0b2a5b, #2aa8ff);
+    }
+    .brand-title{ font-weight:800; letter-spacing:.2px; }
+    .brand-sub{ color:var(--muted); font-size:13px; margin-top:2px; }
+
+    nav a{ color:var(--muted); text-decoration:none; margin-left:14px; }
+    nav a:hover{ color:var(--text); }
+
+    .hero{ padding:34px 0 10px; }
+    h1{
+      font-size:clamp(28px, 4vw, 46px);
+      line-height:1.06;
+      margin: 10px 0 12px;
+      color: var(--heading);
+      font-weight: 900;
+    }
+    h2{ margin: 0 0 10px; color: var(--heading); font-weight: 900; }
+    h3{ color: var(--heading); margin: 0 0 8px; }
+
+    .lead, .text{
+      color: var(--text);
+      opacity: .95;
+      max-width: 75ch;
+      line-height: 1.55;
+    }
+    .notice{ margin-top: 12px; color: var(--muted); font-size: 13px; }
+
+    .card{
+      margin: 16px 0;
+      padding: 18px;
+      background: color-mix(in srgb, var(--card) 92%, black);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .steps{ margin: 10px 0 0; color: var(--text); opacity:.95; }
+    .steps li{ margin: 8px 0; }
+
+    form{ display:grid; gap: 12px; margin-top: 12px; }
+    .grid2{ display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    @media (max-width: 900px){ .grid2{ grid-template-columns: 1fr; } }
+
+    label{ display:grid; gap:6px; color: var(--muted); font-size: 13px; }
+    input, select, textarea{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 12px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+    }
+
+    .req{ color: #ff6b6b; margin-left: 6px; }
+
+    .checkbox{
+      display:flex; gap:10px; align-items:flex-start;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .checkbox input{ margin-top: 3px; }
+
+    .hr{ border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+    .btn{
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, var(--primary), #67d2ff);
+      border: none;
+      color: #05101b;
+      font-weight: 900;
+    }
+    .btn.ghost:hover{ border-color: #234060; }
+
+    .small{ color: var(--muted); font-size: 12px; }
+    code{ color: #9bd3ff; }
+
+    .status{
+      margin-top: 14px;
+      border: 1px dashed #24415f;
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(0,0,0,0.22);
+    }
+    .status-row{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+    .status-title{ color: var(--heading); font-weight: 900; }
+    .status-text{ color: var(--muted); margin-top: 2px; }
+    .progress{
+      margin-top: 10px;
+      height: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar{
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary), #67d2ff);
+      width: 0%;
+      transition: width .3s ease;
+    }
+    .pre{
+      margin-top: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      overflow:auto;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+    .hidden{ display:none; }
+    .spinner{
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.18);
+      border-top-color: var(--primary);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin{ to { transform: rotate(360deg); } }
+
+    footer{ padding: 24px 0 40px; }
+    .footer-text{ color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ ÉN JSON-KONFIG DU KAN ENDRE -->
+  <script type="application/json" id="app-config">
+  {
+    "app": {
+      "name": "CSRD Autopilot",
+      "tagline": "Last opp data → AI lager rapportutkast (ESRS)",
+      "nav": [
+        { "label": "Hvordan det funker", "href": "#how" },
+        { "label": "Last opp", "href": "#upload" },
+        { "label": "Pris", "href": "#pricing" }
+      ]
+    },
+    "api": {
+      "base": "https://YOUR-BACKEND.example/api",
+      "endpoints": {
+        "create_job": "/jobs",
+        "job_status": "/jobs/{job_id}"
+      },
+      "poll_ms": 2000,
+      "timeout_ms": 360000
+    },
+    "theme": {
+      "background": "#000000",
+      "heading_color": "#0b2a5b",
+      "text_color": "#ffffff"
+    },
+    "content": {
+      "hero_title": "CSRD-rapportering, automatisert",
+      "hero_lead": "Du laster opp grunnlagsdata. Vi mapper mot ESRS, genererer rapportutkast og leverer revisjonsvennlig sporbarhet (audit trail).",
+      "notice": "Denne siden er frontend (GitHub Pages). AI-kjøring skjer i en separat backend du kobler på via API."
+    },
+    "intake": {
+      "required_minimum_text": "Minimum for å lage et betalingsbart førsteutkast: Årsrapport/årsregnskap (PDF) + virksomhetsbeskrivelse + basis nøkkeltall.",
+      "fields": [
+        { "key": "orgnr", "label": "Organisasjonsnummer (9 siffer)", "type": "text", "required": true, "pattern": "^[0-9]{9}$", "placeholder": "123456789" },
+        { "key": "reporting_year", "label": "Rapporteringsår", "type": "number", "required": true, "min": 2024, "max": 2035, "default": 2025 },
+        { "key": "industry", "label": "Bransje", "type": "select", "required": true,
+          "options": ["Eiendom","Entreprenør/bygg","Energi/kraft","Produksjon","Transport/logistikk","Tjenester","Annet"]
+        },
+        { "key": "employees", "label": "Antall ansatte", "type": "number", "required": true, "min": 1 },
+        { "key": "revenue_mnok", "label": "Omsetning (MNOK)", "type": "number", "required": true, "min": 0, "step": 0.1 },
+        { "key": "contact_email", "label": "Kontakt e-post", "type": "email", "required": true, "placeholder": "navn@firma.no" },
+        { "key": "business_desc", "label": "Kort virksomhetsbeskrivelse (min. 120 tegn)", "type": "textarea", "required": true, "minlength": 120, "rows": 4 }
+      ],
+      "consent": {
+        "key": "consent",
+        "label": "Jeg bekrefter at jeg har rettigheter til innholdet, og at data kan brukes for å generere et rapportutkast.",
+        "required": true
+      }
+    },
+    "uploads": {
+      "file_fields": [
+        { "key": "annual_report_pdf", "label": "Årsrapport/årsregnskap (PDF)", "accept": ".pdf", "required": true },
+        { "key": "energy_file", "label": "Energi/strøm (CSV/XLSX)", "accept": ".csv,.xlsx", "required": false },
+        { "key": "hr_file", "label": "HR/HMS (CSV/XLSX)", "accept": ".csv,.xlsx", "required": false },
+        { "key": "procurement_file", "label": "Innkjøp/leverandører (CSV/XLSX)", "accept": ".csv,.xlsx", "required": false },
+        { "key": "policies_file", "label": "Policies (ZIP/PDF/DOCX)", "accept": ".zip,.pdf,.docx", "required": false }
+      ]
+    },
+    "pricing": [
+      { "name": "Pilot", "price": "kr 15–30k", "bullets": ["Utkast + gap-analyse","Audit trail (basis)","Levering 7–14 dager"], "featured": false },
+      { "name": "Pro", "price": "kr 65k/år", "bullets": ["Full ESRS (fasevis)","2 rapporter/år","Utvidet audit trail"], "featured": true },
+      { "name": "Partner", "price": "kr 150k+/år", "bullets": ["Flere selskaper","Revisor-flow","API/Integrasjoner"], "featured": false }
+    ],
+    "demo_fill": {
+      "orgnr": "123456789",
+      "reporting_year": 2025,
+      "industry": "Eiendom",
+      "employees": 140,
+      "revenue_mnok": 520,
+      "contact_email": "demo@firma.no",
+      "business_desc": "Vi utvikler og forvalter næringseiendom. Virksomheten inkluderer drift, vedlikehold, utleie og prosjektutvikling. Vi har leverandørkjeder knyttet til bygg, driftstjenester og energi."
+    }
+  }
+  </script>
+
+  <header class="container">
+    <div class="brand">
+      <div class="logo">◎</div>
+      <div>
+        <div class="brand-title" id="brandTitle"></div>
+        <div class="brand-sub" id="brandSub"></div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1 id="heroTitle"></h1>
+      <p class="lead" id="heroLead"></p>
+      <div class="actions">
+        <a class="btn primary" href="#upload">Start opplasting</a>
+        <button class="btn ghost" id="btnDemoFill" type="button">Fyll demo-data</button>
+      </div>
+      <div class="notice" id="notice"></div>
+    </section>
+
+    <section id="how" class="card">
+      <h2>Hvordan det funker</h2>
+      <ol class="steps">
+        <li><b>Intake</b>: Bransje, år, orgnr, kort virksomhetsbeskrivelse.</li>
+        <li><b>Upload</b>: Årsrapport + (valgfritt) energi/HR/innkjøp/policies.</li>
+        <li><b>AI + ESRS</b>: Parser → ESRS-mapping → utkast + gap-analyse + audit trail.</li>
+        <li><b>Output</b>: Rapport (Markdown / DOCX senere) + “what’s missing” liste.</li>
+      </ol>
+    </section>
+
+    <section id="upload" class="card">
+      <h2>Last opp grunnlagsdata</h2>
+      <p class="text" id="minimumText"></p>
+
+      <form id="intakeForm"></form>
+
+      <div id="statusBox" class="status hidden">
+        <div class="status-row">
+          <div>
+            <div class="status-title">Jobbstatus</div>
+            <div id="statusText" class="status-text">Klar</div>
+          </div>
+          <div id="spinner" class="spinner hidden"></div>
+        </div>
+        <div class="progress"><div id="bar" class="bar" style="width:0%"></div></div>
+
+        <div class="actions" style="margin-top:10px;">
+          <a id="downloadLink" class="btn primary hidden" href="#" download>Last ned rapport</a>
+          <button id="btnShowJson" class="btn ghost hidden" type="button">Vis intake-JSON</button>
+          <button id="btnClear" class="btn ghost" type="button">Nullstill</button>
+        </div>
+        <pre id="debugJson" class="pre hidden"></pre>
+
+        <div class="small" style="margin-top:10px;">
+          Backend: <code id="apiBase"></code>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="card">
+      <h2>Pris</h2>
+      <p class="text">Start med pilotpris per rapport for å få betalt tidlig, og gå over til abonnement når du har 3–5 caser.</p>
+      <div id="pricingGrid" class="grid2"></div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <div class="footer-text">© <span id="yearNow"></span> CSRD Autopilot · Ikke juridisk rådgivning</div>
+  </footer>
+
+  <script>
+    // ===== Load config JSON =====
+    const cfg = JSON.parse(document.getElementById("app-config").textContent);
+
+    // Apply theme essentials (you can expand this if needed)
+    document.documentElement.style.setProperty("--bg", cfg.theme.background);
+    document.documentElement.style.setProperty("--heading", cfg.theme.heading_color);
+    document.documentElement.style.setProperty("--text", cfg.theme.text_color);
+
+    // Header / hero
+    document.getElementById("brandTitle").textContent = cfg.app.name;
+    document.getElementById("brandSub").textContent = cfg.app.tagline;
+
+    const nav = document.getElementById("nav");
+    nav.innerHTML = cfg.app.nav.map(n => `<a href="${n.href}">${n.label}</a>`).join("");
+
+    document.getElementById("heroTitle").textContent = cfg.content.hero_title;
+    document.getElementById("heroLead").textContent = cfg.content.hero_lead;
+    document.getElementById("notice").textContent = cfg.content.notice;
+    document.getElementById("minimumText").textContent = cfg.intake.required_minimum_text;
+
+    document.getElementById("apiBase").textContent = cfg.api.base;
+    document.getElementById("yearNow").textContent = new Date().getFullYear();
+
+    // Pricing cards (simple)
+    const pricingGrid = document.getElementById("pricingGrid");
+    pricingGrid.innerHTML = cfg.pricing.map(p => `
+      <div class="card" style="margin:0; border-color:${p.featured ? 'color-mix(in srgb, var(--primary) 55%, var(--border))' : 'var(--border)'};">
+        <h3>${p.name}</h3>
+        <div style="font-size:22px; font-weight:900; margin:8px 0 10px;">${p.price}</div>
+        <ul style="margin:0; padding-left:18px; color: var(--text); opacity:.95;">
+          ${p.bullets.map(b => `<li style="margin:6px 0;">${b}</li>`).join("")}
+        </ul>
+      </div>
+    `).join("");
+
+    // ===== Build form from JSON =====
+    const form = document.getElementById("intakeForm");
+    form.innerHTML = "";
+
+    const grid2 = document.createElement("div");
+    grid2.className = "grid2";
+    form.appendChild(grid2);
+
+    function addField(parent, f) {
+      const label = document.createElement("label");
+      label.textContent = f.label + (f.required ? " *" : "");
+      if (f.type === "textarea") {
+        const ta = document.createElement("textarea");
+        ta.name = f.key;
+        ta.rows = f.rows || 4;
+        if (f.required) ta.required = true;
+        if (f.minlength) ta.minLength = f.minlength;
+        parent.appendChild(label);
+        label.appendChild(ta);
+        return;
+      }
+      if (f.type === "select") {
+        const sel = document.createElement("select");
+        sel.name = f.key;
+        if (f.required) sel.required = true;
+        const opt0 = document.createElement("option");
+        opt0.value = "";
+        opt0.textContent = "Velg";
+        sel.appendChild(opt0);
+        for (const o of f.options || []) {
+          const opt = document.createElement("option");
+          opt.value = o; opt.textContent = o;
+          sel.appendChild(opt);
+        }
+        parent.appendChild(label);
+        label.appendChild(sel);
+        return;
+      }
+      const inp = document.createElement("input");
+      inp.name = f.key;
+      inp.type = (f.type === "email") ? "email" : (f.type === "number" ? "number" : "text");
+      if (f.required) inp.required = true;
+      if (f.placeholder) inp.placeholder = f.placeholder;
+      if (f.pattern) inp.pattern = f.pattern;
+      if (f.min != null) inp.min = f.min;
+      if (f.max != null) inp.max = f.max;
+      if (f.step != null) inp.step = f.step;
+      if (f.default != null) inp.value = f.default;
+      parent.appendChild(label);
+      label.appendChild(inp);
+    }
+
+    // First batch: non-textarea fields in grid
+    const fields = cfg.intake.fields;
+    for (const f of fields) {
+      if (f.type === "textarea") continue;
+      addField(grid2, f);
+    }
+    // Add textarea below
+    const taField = fields.find(x => x.type === "textarea");
+    if (taField) addField(form, taField);
+
+    // Divider
+    const hr = document.createElement("hr");
+    hr.className = "hr";
+    form.appendChild(hr);
+
+    // File uploads grid
+    const fileGrid = document.createElement("div");
+    fileGrid.className = "grid2";
+    form.appendChild(fileGrid);
+
+    for (const ff of cfg.uploads.file_fields) {
+      const label = document.createElement("label");
+      label.innerHTML = `${ff.label}${ff.required ? ' <span class="req">*</span>' : ''}`;
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.name = ff.key;
+      inp.accept = ff.accept;
+      if (ff.required) inp.required = true;
+      label.appendChild(inp);
+      fileGrid.appendChild(label);
+    }
+
+    // Consent
+    const cons = document.createElement("label");
+    cons.className = "checkbox";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.name = cfg.intake.consent.key;
+    cb.required = !!cfg.intake.consent.required;
+    const span = document.createElement("span");
+    span.textContent = cfg.intake.consent.label;
+    cons.appendChild(cb);
+    cons.appendChild(span);
+    form.appendChild(cons);
+
+    // Buttons
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.innerHTML = `
+      <button class="btn primary" type="submit">Send til AI</button>
+    `;
+    form.appendChild(actions);
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.innerHTML = `API-endepunkt settes i JSON-konfig: <code>${cfg.api.base}</code>`;
+    form.appendChild(hint);
+
+    // ===== Status UI helpers =====
+    const statusBox = document.getElementById("statusBox");
+    const statusText = document.getElementById("statusText");
+    const bar = document.getElementById("bar");
+    const spinner = document.getElementById("spinner");
+    const downloadLink = document.getElementById("downloadLink");
+    const btnShowJson = document.getElementById("btnShowJson");
+    const debugJson = document.getElementById("debugJson");
+
+    function setStatus(show, text, progressPct, spinning) {
+      statusBox.classList.toggle("hidden", !show);
+      statusText.textContent = text ?? "";
+      bar.style.width = `${Math.max(0, Math.min(100, progressPct ?? 0))}%`;
+      spinner.classList.toggle("hidden", !spinning);
+    }
+    function clearUI() {
+      downloadLink.classList.add("hidden");
+      btnShowJson.classList.add("hidden");
+      debugJson.classList.add("hidden");
+      debugJson.textContent = "";
+      setStatus(false, "", 0, false);
+    }
+    document.getElementById("btnClear").addEventListener("click", () => {
+      form.reset();
+      clearUI();
+    });
+
+    function showDebug(obj) {
+      btnShowJson.classList.remove("hidden");
+      btnShowJson.onclick = () => {
+        debugJson.classList.toggle("hidden");
+        debugJson.textContent = JSON.stringify(obj, null, 2);
+      };
+    }
+
+    // ===== Demo fill =====
+    document.getElementById("btnDemoFill").addEventListener("click", () => {
+      const d = cfg.demo_fill || {};
+      for (const [k,v] of Object.entries(d)) {
+        const el = form.querySelector(`[name="${k}"]`);
+        if (!el) continue;
+        el.value = v;
+      }
+    });
+
+    // ===== Submit handler (multipart to backend) =====
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearUI();
+
+      const fd = new FormData(form);
+      if (!fd.get(cfg.intake.consent.key)) {
+        alert("Du må samtykke før innsending.");
+        return;
+      }
+
+      // Build metadata JSON
+      const metadata = {};
+      for (const f of cfg.intake.fields) {
+        const v = fd.get(f.key);
+        if (f.type === "number") metadata[f.key] = v ? Number(v) : null;
+        else metadata[f.key] = v ?? "";
+      }
+      metadata[cfg.intake.consent.key] = true;
+
+      // Build multipart payload: metadata + files
+      const payload = new FormData();
+      payload.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+
+      const filesSent = [];
+      for (const ff of cfg.uploads.file_fields) {
+        const f = fd.get(ff.key);
+        if (f && typeof f === "object" && f.name) {
+          payload.append(ff.key, f, f.name);
+          filesSent.push({ key: ff.key, name: f.name, size: f.size, type: f.type });
+        } else if (ff.required) {
+          alert(`Mangler obligatorisk fil: ${ff.label}`);
+          return;
+        }
+      }
+
+      setStatus(true, "Laster opp …", 15, true);
+      showDebug({ metadata, files: filesSent });
+
+      // Start job
+      const createUrl = cfg.api.base + cfg.api.endpoints.create_job;
+      try {
+        const startRes = await fetch(createUrl, { method: "POST", body: payload });
+        if (!startRes.ok) {
+          const t = await startRes.text();
+          throw new Error(`Start failed: ${startRes.status} ${t}`);
+        }
+        const { job_id } = await startRes.json();
+        setStatus(true, `Jobb opprettet (ID: ${job_id}). Prosesserer …`, 35, true);
+
+        // Poll status
+        const statusUrlTemplate = cfg.api.base + cfg.api.endpoints.job_status;
+        const pollMs = cfg.api.poll_ms ?? 2000;
+        const timeoutMs = cfg.api.timeout_ms ?? 360000;
+        const t0 = Date.now();
+
+        while (true) {
+          await new Promise(r => setTimeout(r, pollMs));
+          const stUrl = statusUrlTemplate.replace("{job_id}", encodeURIComponent(job_id));
+          const stRes = await fetch(stUrl);
+          if (!stRes.ok) throw new Error(`Status failed: ${stRes.status}`);
+
+          const st = await stRes.json();
+          setStatus(true, st.message || `Status: ${st.status}`, st.progress ?? 50, st.status !== "done" && st.status !== "error");
+
+          if (st.status === "done") {
+            setStatus(true, "Ferdig ✅ Rapport klar for nedlasting.", 100, false);
+            if (st.report_url) {
+              downloadLink.href = st.report_url;
+              downloadLink.classList.remove("hidden");
+            }
+            return;
+          }
+          if (st.status === "error") {
+            setStatus(true, `Feil: ${st.message || "Ukjent feil"}`, st.progress ?? 0, false);
+            return;
+          }
+          if (Date.now() - t0 > timeoutMs) {
+            setStatus(true, "Tidsavbrudd: jobben tar lengre tid enn forventet.", 80, false);
+            return;
+          }
+        }
+
+      } catch (err) {
+        setStatus(true, `Feil ved innsending: ${err.message}`, 0, false);
+      }
+    });
+  </script>
+</body>
+</html>
